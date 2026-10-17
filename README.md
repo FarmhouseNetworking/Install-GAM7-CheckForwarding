@@ -57,6 +57,16 @@ of the client tenant** to sign in, so this **can't** run unattended through an R
 | `-WorkDir` | `C:\GAMWork` | GAM working folder; reports are saved here |
 | `-Update` | off | Re-download GAM even if it's already installed |
 
+**Use a normal PowerShell or Windows Terminal window, not PowerShell ISE.** ISE can't pass
+keyboard input to `gam.exe`, so setup hangs at the first GAM prompt. The script refuses to start
+in ISE.
+
+**Trust the GAM setup app first.** During `gam create project`, GAM asks you to mark its
+"GAM Project Creation" client ID as **Trusted** in the tenant (*Admin console > Security >
+Access and data control > API controls > Manage third-party app access > Configure new app*),
+then press Enter. GAM prints the exact client ID and link. Once setup is finished, you can remove
+that trust again.
+
 When choosing scopes during authorization, **don't select all of them**: the sign-in URL gets
 too long and fails. For the service account, include the Gmail settings scopes; the forwarding,
 filter and delegate commands need them.

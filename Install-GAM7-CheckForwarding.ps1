@@ -47,6 +47,12 @@ $PSDefaultParameterValues['Copy-Item:ErrorAction']         = 'Stop'
 
 function Step([string]$m) { Write-Host "`n=== $m" -ForegroundColor Cyan }
 
+# GAM asks questions on stdin (scope menus, "press enter once trust is complete"). PowerShell ISE has
+# no real console, so gam.exe waits forever for input that never arrives. Refuse to start there.
+if ($Host.Name -eq 'Windows PowerShell ISE Host') {
+    throw 'Run this in a normal PowerShell or Windows Terminal window, not PowerShell ISE - ISE cannot send keyboard input to gam.exe and the setup will hang.'
+}
+
 # ---------------------------------------------------------------- 1. Install / update from GitHub
 $gamExe = Join-Path $InstallDir 'gam.exe'
 if ($Update -or -not (Test-Path $gamExe)) {
