@@ -1,0 +1,8 @@
+# GAM credentials and reports must never be committed
+oauth2.txt
+oauth2service.json
+client_secrets.json
+gam.cfg
+*_forwarding_*.txt
+GAMConfig/
+GAMWork/
