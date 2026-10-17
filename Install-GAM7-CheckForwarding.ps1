@@ -115,6 +115,26 @@ if (-not $haveOauth) {
     if (-not (Test-Path (Join-Path $ConfigDir 'oauth2.txt'))) { throw 'Admin OAuth did not complete (oauth2.txt missing). Re-run the script.' }
 }
 
+# Google's default org policy (iam.disableServiceAccountKeyUpload) often blocks the key GAM uploads
+# during "create project", leaving oauth2service.json with an empty private_key. Detect that and explain.
+$saFile = Join-Path $ConfigDir 'oauth2service.json'
+$saKey  = $null
+try { $saKey = (Get-Content $saFile -Raw -ErrorAction Stop | ConvertFrom-Json).private_key } catch { }
+if (-not $saKey) {
+    $proj = $null
+    try { $proj = (Get-Content $saFile -Raw -ErrorAction Stop | ConvertFrom-Json).project_id } catch { }
+    Write-Host "`nThe service account has NO KEY ($saFile has an empty private_key)." -ForegroundColor Red
+    Write-Host 'This is almost always the Google Cloud org policy that blocks service account key upload. To fix:' -ForegroundColor Yellow
+    Write-Host "  1. console.cloud.google.com > select the ORGANIZATION > IAM & Admin > IAM > Grant access:"
+    Write-Host "     give $AdminEmail the 'Organization Policy Administrator' role."
+    Write-Host "  2. Select project '$proj' > IAM & Admin > Organization Policies. For BOTH"
+    Write-Host "     iam.disableServiceAccountKeyUpload and iam.managed.disableServiceAccountKeyUpload:"
+    Write-Host "     Manage policy > Override parent's policy > Enforcement Off > Set policy. Wait 2-3 minutes."
+    Write-Host "  3. In this window:  `$env:GAMCFGDIR = '$ConfigDir'; & '$gamExe' upload sakey"
+    Write-Host "  4. Re-run this script. Afterwards, turn both policies back ON and remove the role."
+    throw 'Service account key missing - see the steps above.'
+}
+
 Step 'Checking service account (domain-wide delegation)'
 $authorized = $false
 for ($i = 1; $i -le 5 -and -not $authorized; $i++) {

@@ -67,6 +67,17 @@ Access and data control > API controls > Manage third-party app access > Configu
 then press Enter. GAM prints the exact client ID and link. Once setup is finished, you can remove
 that trust again.
 
+**"Unable to load PEM file" or an empty service account key.** Newer Google Cloud
+organizations block service account key upload by default (`iam.disableServiceAccountKeyUpload`).
+When that happens, `gam create project` finishes but `oauth2service.json` has no `private_key`.
+The script detects this and stops with the fix:
+1. Grant yourself **Organization Policy Administrator** at the organization level.
+2. On the GAM project, set both `iam.disableServiceAccountKeyUpload` and
+   `iam.managed.disableServiceAccountKeyUpload` to **Enforcement Off**, then wait a few minutes.
+3. Run `gam upload sakey` with `GAMCFGDIR` pointing at the tenant folder.
+4. Re-run the script. Afterwards, turn the policies back on and remove the role.
+   The uploaded key keeps working.
+
 When choosing scopes during authorization, **don't select all of them**: the sign-in URL gets
 too long and fails. For the service account, include the Gmail settings scopes; the forwarding,
 filter and delegate commands need them.
